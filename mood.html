@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mood Tracker</title>
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --container-bg-color: #ffffff;
+            --text-color: #333;
+            --border-color: #ccc;
+            --accent-color: #007bff;
+            --shadow-light: rgba(0, 0, 0, 0.1);
+            --shadow-dark: rgba(0, 0, 0, 0.2);
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background-color: var(--container-bg-color);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px var(--shadow-light);
+        }
+        h1, h2 {
+            text-align: center;
+            color: var(--text-color);
+        }
+        .section {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .emotion-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+            gap: 15px;
+            text-align: center;
+        }
+        .emotion-icon {
+            font-size: 32px;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            transition: transform 0.2s, background-color 0.2s, border-color 0.2s;
+            background-color: #f8f9fa;
+        }
+        .emotion-icon:hover {
+            transform: translateY(-3px);
+            background-color: #e9ecef;
+        }
+        .emotion-icon.selected {
+            border-color: var(--accent-color);
+            background-color: #e9f5ff;
+        }
+        .prompt-section {
+            display: none;
+        }
+        .prompt-section.active {
+            display: block;
+        }
+        textarea {
+            width: calc(100% - 20px);
+            min-height: 80px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-top: 10px;
+            font-size: 16px;
+        }
+        .actions-section {
+            display: none;
+        }
+        .actions-section.active {
+            display: block;
+        }
+        .suggestions-list {
+            list-style-type: none;
+            padding: 0;
+            margin-top: 10px;
+        }
+        .suggestion-item {
+            background-color: #e9ecef;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            flex: 1;
+            transition: background-color 0.2s;
+        }
+        #saveButton {
+            background-color: var(--accent-color);
+            color: #fff;
+        }
+        #saveButton:hover {
+            background-color: #0056b3;
+        }
+        #restartButton {
+            background-color: #6c757d;
+            color: #fff;
+        }
+        #restartButton:hover {
+            background-color: #5a6268;
+        }
+        .history-section {
+            margin-top: 20px;
+        }
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .history-table th, .history-table td {
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            text-align: left;
+            word-wrap: break-word;
+        }
+        .history-table th {
+            background-color: #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mood Tracker</h1>
+
+        <div id="moodSelectionSection" class="section">
+            <h2>How are you feeling right now?</h2>
+            <div class="emotion-grid">
+                <span class="emotion-icon" data-mood="Joyful">😃</span>
+                <span class="emotion-icon" data-mood="Calm">😌</span>
+                <span class="emotion-icon" data-mood="Peaceful">🧘</span>
+                <span class="emotion-icon" data-mood="Content">😊</span>
+                <span class="emotion-icon" data-mood="Energetic">⚡️</span>
+                <span class="emotion-icon" data-mood="Excited">🥳</span>
+                <span class="emotion-icon" data-mood="Inspired">✨</span>
+                <span class="emotion-icon" data-mood="Stressed">😫</span>
+                <span class="emotion-icon" data-mood="Anxious">😟</span>
+                <span class="emotion-icon" data-mood="Angry">😡</span>
+                <span class="emotion-icon" data-mood="Frustrated">😤</span>
+                <span class="emotion-icon" data-mood="Sad">😥</span>
+                <span class="emotion-icon" data-mood="Lonely">😔</span>
+                <span class="emotion-icon" data-mood="Tired">😴</span>
+                <span class="emotion-icon" data-mood="Confused">😕</span>
+                <span class="emotion-icon" data-mood="Surprised">😳</span>
+                <span class="emotion-icon" data-mood="Indifferent">😐</span>
+            </div>
+        </div>
+
+        <div id="promptSection" class="section prompt-section">
+            <h2>Tell me more...</h2>
+            <p id="promptQuestion"></p>
+            <textarea id="promptAnswer" placeholder="Type your answer here..."></textarea>
+            <div class="button-group">
+                <button id="saveButton">Save Entry</button>
+                <button id="restartButton">Restart</button>
+            </div>
+        </div>
+        
+        <div id="actionsSection" class="section actions-section">
+            <h2>Suggestions for you:</h2>
+            <p>Based on your feelings, here are some things you can do.</p>
+            <div id="suggestionsList"></div>
+            <div class="button-group">
+                <button id="restartFromActionsButton">Restart</button>
+            </div>
+        </div>
+
+        <div class="history-section">
+            <h2>Your Mood History</h2>
+            <table id="historyTable" class="history-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Mood</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const moodIcons = document.querySelectorAll('.emotion-icon');
+        const moodSelectionSection = document.getElementById('moodSelectionSection');
+        const promptSection = document.getElementById('promptSection');
+        const promptQuestionEl = document.getElementById('promptQuestion');
+        const promptAnswerEl = document.getElementById('promptAnswer');
+        const saveButton = document.getElementById('saveButton');
+        const restartButton = document.getElementById('restartButton');
+        const actionsSection = document.getElementById('actionsSection');
+        const suggestionsListEl = document.getElementById('suggestionsList');
+        const restartFromActionsButton = document.getElementById('restartFromActionsButton');
+        const historyTableBody = document.querySelector('#historyTable tbody');
+
+        let selectedMood = null;
+        let currentQuestionIndex = 0;
+        const questions = [
+            "What is the general cause of this feeling?",
+            "Are there any pending matters that require your attention? If so, what are they?",
+            "What thoughts or feelings have been on your mind lately, especially at night?",
+            "What area of your life does this feeling seem to be related to?"
+        ];
+        const answers = {};
+
+        const suggestions = {
+            'Joyful': {
+                'Do Something': ['Share your joy with someone', 'Listen to your favorite upbeat song', 'Take a moment to appreciate what made you happy'],
+                'Do Not Do Something': ['Don\'t let this feeling pass without acknowledging it'],
+                'With Someone Else': ['Call a friend to tell them some good news', 'Go out and celebrate with someone you love']
+            },
+            'Stressed': {
+                'Do Something': ['Take a few deep breaths', 'Go for a walk outside', 'Listen to some calm music'],
+                'Do Not Do Something': ['Don\'t try to handle everything at once', 'Avoid checking work emails for 30 minutes'],
+                'With Someone Else': ['Talk to a trusted friend or family member', 'Ask a colleague for help with a task']
+            },
+            'Anxious': {
+                'Do Something': ['Write down your thoughts and fears', 'Try a 5-minute meditation', 'Do a simple stretch'],
+                'Do Not Do Something': ['Avoid watching the news', 'Don\'t make any big decisions right now'],
+                'With Someone Else': ['Connect with a friend and share your concerns']
+            },
+            'Sad': {
+                'Do Something': ['Listen to a song that matches your mood', 'Watch a funny video', 'Journal your thoughts'],
+                'Do Not Do Something': ['Don\'t isolate yourself', 'Avoid dwelling on negative thoughts'],
+                'With Someone Else': ['Reach out to a friend or family member', 'Talk to a professional if the feeling persists']
+            },
+            'Angry': {
+                'Do Something': ['Take a break and step away from the situation', 'Try a grounding exercise like counting backward from 10', 'Vent your feelings by writing or talking'],
+                'Do Not Do Something': ['Don\'t send that angry message', 'Avoid engaging in heated conversations'],
+                'With Someone Else': ['Talk to someone you trust who can listen without judgment']
+            },
+            'Tired': {
+                'Do Something': ['Rest for a bit, even just 10 minutes', 'Drink some water', 'Eat a healthy snack'],
+                'Do Not Do Something': ['Don\'t push yourself to do more than you can handle'],
+                'With Someone Else': ['Ask for help with a task if you feel overwhelmed']
+            },
+            'Calm': {
+                'Do Something': ['Notice the details of your surroundings', 'Savor the moment', 'Try a breathing exercise to maintain the feeling'],
+                'Do Not Do Something': ['Don\'t let distractions pull you away from this feeling'],
+                'With Someone Else': ['Share this peaceful moment with a loved one']
+            },
+            'Energetic': {
+                'Do Something': ['Channel your energy into a productive task', 'Go for a run or do some exercise', 'Start a new project you\'ve been thinking about'],
+                'Do Not Do Something': ['Don\'t get too overexcited and lose focus'],
+                'With Someone Else': ['Suggest a fun activity with friends']
+            },
+            'Frustrated': {
+                'Do Something': ['Identify the source of the frustration', 'Problem-solve by brainstorming solutions', 'Take a quick break and return with a fresh perspective'],
+                'Do Not Do Something': ['Don\'t give up on the problem'],
+                'With Someone Else': ['Discuss the problem with someone who can offer a new point of view']
+            },
+            'Lonely': {
+                'Do Something': ['Engage in a hobby you enjoy', 'Watch a comfort movie or show'],
+                'Do Not Do Something': ['Don\'t scroll through social media and compare yourself to others'],
+                'With Someone Else': ['Call a friend or family member', 'Join an online community with similar interests']
+            },
+            'Confused': {
+                'Do Something': ['Write down the problem to see it clearly', 'Break down the issue into smaller, more manageable parts'],
+                'Do Not Do Something': ['Don\'t make any rash decisions'],
+                'With Someone Else': ['Ask someone for clarification or a different perspective']
+            },
+            'Surprised': {
+                'Do Something': ['Take a moment to process the new information', 'Enjoy the feeling if it\'s a positive surprise'],
+                'Do Not Do Something': ['Don\'t react immediately without thinking'],
+                'With Someone Else': ['Share the news with a friend']
+            },
+            'Indifferent': {
+                'Do Something': ['Explore something new, like a podcast or article', 'Try to find something that sparks your interest'],
+                'Do Not Do Something': ['Don\'t settle into a rut'],
+                'With Someone Else': ['Ask a friend what they are excited about']
+            }
+        };
+        
+        function updateUI(step) {
+            moodSelectionSection.style.display = 'none';
+            promptSection.style.display = 'none';
+            actionsSection.style.display = 'none';
+
+            if (step === 'moodSelection') {
+                moodSelectionSection.style.display = 'block';
+                document.querySelectorAll('.emotion-icon').forEach(icon => icon.classList.remove('selected'));
+            } else if (step === 'prompt') {
+                promptSection.style.display = 'block';
+                promptQuestionEl.textContent = questions[currentQuestionIndex];
+                promptAnswerEl.value = '';
+            } else if (step === 'actions') {
+                actionsSection.style.display = 'block';
+                displaySuggestions(selectedMood);
+            }
+        }
+
+        function displaySuggestions(mood) {
+            suggestionsListEl.innerHTML = '';
+            const moodSuggestions = suggestions[mood];
+            if (moodSuggestions) {
+                for (const category in moodSuggestions) {
+                    const categoryHeader = document.createElement('h3');
+                    categoryHeader.textContent = category;
+                    suggestionsListEl.appendChild(categoryHeader);
+                    
+                    const ul = document.createElement('ul');
+                    ul.className = 'suggestions-list';
+                    moodSuggestions[category].forEach(suggestion => {
+                        const li = document.createElement('li');
+                        li.className = 'suggestion-item';
+                        li.textContent = suggestion;
+                        ul.appendChild(li);
+                    });
+                    suggestionsListEl.appendChild(ul);
+                }
+            } else {
+                suggestionsListEl.innerHTML = '<p>No specific suggestions for this mood. Try reflecting on what might help you feel better.</p>';
+            }
+        }
+
+        function saveEntry(mood, answers) {
+            const history = JSON.parse(localStorage.getItem('moodHistory')) || [];
+            const newEntry = {
+                date: new Date().toLocaleString(),
+                mood: mood,
+                details: answers
+            };
+            history.push(newEntry);
+            localStorage.setItem('moodHistory', JSON.stringify(history));
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const history = JSON.parse(localStorage.getItem('moodHistory')) || [];
+            historyTableBody.innerHTML = '';
+            history.forEach(entry => {
+                const row = historyTableBody.insertRow();
+                row.innerHTML = `
+                    <td>${entry.date}</td>
+                    <td>${entry.mood}</td>
+                    <td>${Object.entries(entry.details).map(([q, a]) => `<strong>${q}</strong>: ${a}`).join('<br>')}</td>
+                `;
+            });
+        }
+
+        moodIcons.forEach(icon => {
+            icon.addEventListener('click', () => {
+                document.querySelectorAll('.emotion-icon').forEach(i => i.classList.remove('selected'));
+                icon.classList.add('selected');
+                selectedMood = icon.dataset.mood;
+                updateUI('prompt');
+                currentQuestionIndex = 0;
+                promptQuestionEl.textContent = questions[currentQuestionIndex];
+            });
+        });
+
+        saveButton.addEventListener('click', () => {
+            const answer = promptAnswerEl.value;
+            answers[questions[currentQuestionIndex]] = answer;
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                promptQuestionEl.textContent = questions[currentQuestionIndex];
+                promptAnswerEl.value = '';
+            } else {
+                saveEntry(selectedMood, answers);
+                updateUI('actions');
+            }
+        });
+
+        restartButton.addEventListener('click', () => {
+            selectedMood = null;
+            currentQuestionIndex = 0;
+            promptAnswerEl.value = '';
+            for (const key in answers) {
+                delete answers[key];
+            }
+            updateUI('moodSelection');
+        });
+        
+        restartFromActionsButton.addEventListener('click', () => {
+            selectedMood = null;
+            currentQuestionIndex = 0;
+            promptAnswerEl.value = '';
+            for (const key in answers) {
+                delete answers[key];
+            }
+            updateUI('moodSelection');
+        });
+
+        // Initial render
+        renderHistory();
+        updateUI('moodSelection');
+    </script>
+</body>
+</html>
